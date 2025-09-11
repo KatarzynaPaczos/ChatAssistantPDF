@@ -4,7 +4,21 @@ This project is a backend application built with FastAPI that enables users to a
 
 To run the application you must type:
 ```python
-uv run python main
+uv run python main.py
 ```
 
-The application will them be shown 
+To see the results go to:
+http://localhost:8000 or
+http://localhost:8000/docs
+
+
+You mast have docker installed: 
+```python
+docker --version
+```
+To start docker container run - build the image and then run the container
+```python
+uv export --frozen --no-dev --no-cache -o requirements.txt
+docker build -t chat-assistant-pdf .
+docker run -p 8000:8000 chat-assistant-pdf
+```
