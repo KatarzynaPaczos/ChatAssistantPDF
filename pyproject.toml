@@ -1,0 +1,11 @@
+[project]
+name = "chatassistantpdf"
+version = "0.1.0"
+description = "This project is a backend application built with FastAPI that enables users to ask questions in natural language. The system integrates a Large Language Model (LLM), which generates responses based on private documents such as PDFs, notes, and scientific articles. The goal is to provide an intelligent, document-aware question–answering interface."
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "fastapi>=0.116.1",
+    "numpy>=2.3.3",
+    "uvicorn>=0.35.0",
+]
