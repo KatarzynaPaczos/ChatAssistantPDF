@@ -12,7 +12,7 @@ http://localhost:8000 or
 http://localhost:8000/docs
 
 
-You mast have docker installed: 
+You mast have docker installed:
 ```python
 docker --version
 ```
@@ -21,4 +21,8 @@ To start docker container run - build the image and then run the container
 uv export --frozen --no-dev --no-cache -o requirements.txt
 docker build -t chat-assistant-pdf .
 docker run -p 8000:8000 chat-assistant-pdf
+```
+Now instead of all this commands above you can run:
+```python
+docker compose up --build
 ```
