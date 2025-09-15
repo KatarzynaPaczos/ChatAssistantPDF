@@ -6,13 +6,12 @@ To run the application you must type:
 ```python
 uv run python main.py
 ```
-
 To see the results go to:
 http://localhost:8000 or
 http://localhost:8000/docs
 
 
-You mast have docker installed:
+It is possible to use it with docker also - you must have docker installed:
 ```python
 docker --version
 ```

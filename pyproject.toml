@@ -5,7 +5,14 @@ description = "This project is a backend application built with FastAPI that ena
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
+    "bitsandbytes>=0.47.0",
     "fastapi>=0.116.1",
+    "hf-xet>=1.1.10",
+    "huggingface-hub>=0.34.4",
     "numpy>=2.3.3",
+    "pypdf2>=3.0.1",
+    "python-multipart>=0.0.20",
+    "torch>=2.8.0",
+    "transformers>=4.56.1",
     "uvicorn>=0.35.0",
 ]
