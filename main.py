@@ -2,7 +2,7 @@ from app.llm import chat_once, get_history
 import uvicorn
 
 def generate_chat(user_text: str) -> str:
-    #if yu use 'cli' - it is one session
+    #if you use 'cli' - it is one session
     hist = get_history("cli")
     return chat_once(hist, user_text)
 

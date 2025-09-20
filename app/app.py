@@ -12,11 +12,11 @@ app = FastAPI(title="Simple Chat API")
 class AskPayload(BaseModel): #to define JSON schema for request body
     question: str
     session_id: Optional[str] = None
-    max_new_tokens: Optional[int] = 256
-    temperature: Optional[float] = 0.75
+    max_new_tokens: Optional[int] = 100
+    temperature: Optional[float] = 0.1
 
 
-class NewSessionResponse(BaseModel): #this is used to genereta documentation - RESPONSE
+class NewSessionResponse(BaseModel): #this is used to genereta new session id
     session_id: str
 
 
@@ -25,6 +25,9 @@ class NewSessionResponse(BaseModel): #this is used to genereta documentation - R
 def root():
     return {"ok": True}
 
+@app.get("/")
+def redirect():
+    return "Go to:  http://127.0.0.1:8000/docs"
 
 @app.post("/session/new", response_model=NewSessionResponse)
 def new_session():
@@ -41,8 +44,8 @@ def ask(payload: AskPayload):
         answer = chat_once(
             hist,
             payload.question,
-            max_new_tokens=payload.max_new_tokens or 256,
-            temperature=payload.temperature or 0.75,
+            max_new_tokens=payload.max_new_tokens or 100,
+            temperature=payload.temperature or 0.1,
         )
         return {"session_id": sid, "answer": answer}
     except Exception as e:
