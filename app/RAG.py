@@ -10,14 +10,14 @@ def clean_text(txt: str) -> List[str]:
     """
     Cleaning - new line normalisation, erase doubble space
     """
-    if not txt: # paragraf brakes gone!!!!!!! 
+    if not txt:  # paragraf brakes gone!!!!!!!
         return []
-    t = txt.replace("\r\n", "\n").replace("\r", "\n") # Normalize Windows/Mac newlines to Unix '\n'
-    t = re.sub(r"-\n(\w)", r"\1", t) #join breaks in the middle of words "-\nX" -> "X"
-    t = re.sub(r"\n{3,}", "\n\n", t) # Turn 3+ newlines into exactly two (one blank line = paragraph break)
+    t = txt.replace("\r\n", "\n").replace("\r", "\n")  # Normalize Windows/Mac newlines to Unix '\n'
+    t = re.sub(r"-\n(\w)", r"\1", t)  # join breaks in the middle of words "-\nX" -> "X"
+    t = re.sub(r"\n{3,}", "\n\n", t)  # Turn 3+ newlines into exactly two (one blank line = paragraph break)
     t = re.sub(r"(?<!\n)\n(?!\n)", " ", t)  # SINGLE \n -> space
-    t = re.sub(r"[ \t]{2,}", " ", t)  #Collapse multiple spaces or tabs to a single space
-    sentences = re.split(r'(?<=[.!?])\s+', t) # divide by sentences
+    t = re.sub(r"[ \t]{2,}", " ", t)  # Collapse multiple spaces or tabs to a single space
+    sentences = re.split(r'(?<=[.!?])\s+', t)  # divide by sentences
     return [s.strip() for s in sentences if s.strip()]
 
 
@@ -29,7 +29,7 @@ def chunk_text(text: str, max_chars: int = 100, overlap: int = 10) -> List[str]:
     if not paragrafs or len(paragrafs) == 0:
         return []
 
-    #paragraphs = [p.strip() for p in re.split(r"\n{2,}", text) if p.strip()]
+    # paragraphs = [p.strip() for p in re.split(r"\n{2,}", text) if p.strip()]
     chunks = []
     buf = ""
     for p in paragrafs:
@@ -80,6 +80,7 @@ def extract_text_from_pdf(pdf_bytes: bytes) -> str:
         if page_text:
             text += page_text
     return text
+
 
 def preview_chunk(chunk: str, length: int = 400) -> str:
     """Return a preview of a chunk (first N chars)."""

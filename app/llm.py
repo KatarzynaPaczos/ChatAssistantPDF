@@ -2,21 +2,16 @@ from transformers import AutoModelForCausalLM, AutoTokenizer
 from typing import List, Dict
 import torch
 
-#MODEL_NAME = "Qwen/Qwen2.5-3B-Instruct" # too huge
-#MODEL_NAME = "microsoft/Phi-3-mini-4k-instruct" # smaller
+# MODEL_NAME = "Qwen/Qwen2.5-3B-Instruct" # too huge
+# MODEL_NAME = "microsoft/Phi-3-mini-4k-instruct" # smaller
 MODEL_NAME = "HuggingFaceTB/SmolLM2-135M-Instruct"
 tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
 model = AutoModelForCausalLM.from_pretrained(MODEL_NAME)
-model.eval() 
+model.eval()
 
 SESSIONS: Dict[str, List[dict]] = {}
 SYSTEM_PROMPT = "You are a helpful assistant. Answer briefly in English. If you don't know, say you don't know."
 history = [{"role": "system", "content": SYSTEM_PROMPT}]
-
-if tokenizer.pad_token_id is None:
-    tokenizer.pad_token = tokenizer.eos_token
-eos_id = tokenizer.eos_token_id
-pad_id = tokenizer.pad_token_id
 MAX_TURNS = 4  # when the history is too long (more than MAX_TURNS turns), cut it
 
 
@@ -45,16 +40,16 @@ def chat_once(history: List[dict], user_text: str, max_new_tokens=100, temperatu
 
     with torch.inference_mode():
         outputs = model.generate(
-            **inputs, #or input_ids=inputs["input_ids"], attention_mask=inputs["attention_mask"],
+            **inputs,  # or input_ids=inputs["input_ids"], attention_mask=inputs["attention_mask"],
             max_new_tokens=max_new_tokens,
             do_sample=True,
             temperature=temperature
         )
 
-    prompt_len = inputs["input_ids"].shape[1] #length of the response
-    gen_ids = outputs[0][prompt_len:] if outputs[0].size(0) > prompt_len else outputs[0] #remove prompt form the resopnse
-    text = tokenizer.decode(gen_ids, skip_special_tokens=True).strip() #Zamienia tokeny z gen_ids na tekst. skip_special_tokens=True usuwa <s>, </s>, <pad>, itp.
-    #.strip() obcina białe znaki z początku/końca (czasem przydatne, ale może też uciąć celowy początkowy newline).
-
+    prompt_len = inputs["input_ids"].shape[1]  # length of the response
+    gen_ids = outputs[0][prompt_len:] if outputs[0].size(0) > prompt_len else outputs[0]
+    # remove prompt form the resopnse
+    text = tokenizer.decode(gen_ids, skip_special_tokens=True).strip()
+    # Change tokens z gen_ids to text. skip_special_tokens=True removes <s> itp.
     history.append({"role": "assistant", "content": text})
     return text

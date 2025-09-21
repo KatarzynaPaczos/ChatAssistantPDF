@@ -6,18 +6,17 @@ from app.session_manager import create_session, get_session_docs, get_session_hi
 from app.VectorStore import VectorStore
 from typing import Optional
 
-
 app = FastAPI(title="Simple Chat API")
 
 
-class AskPayload(BaseModel): #to define JSON schema for request body
-    #question: str
-    #session_id: Optional[str] = None
+class AskPayload(BaseModel):  # to define JSON schema for request body
+    # question: str
+    # session_id: Optional[str] = None
     max_new_tokens: Optional[int] = 100
     temperature: Optional[float] = 0.1
 
 
-class NewSessionResponse(BaseModel): #this is used to genereta new session id
+class NewSessionResponse(BaseModel):  # this is used to genereta new session id
     session_id: str
 
 
@@ -29,9 +28,8 @@ def new_session():
 
 @app.post("/ask")
 def ask(payload: AskPayload,
-    question: Optional[str] = None,
-    session_id: Optional[str] = None
-):
+        question: Optional[str] = None,
+        session_id: Optional[str] = None):
     question = "" if question is None else question
     sid = session_id or create_session()
     hist = get_session_history(sid)
@@ -59,7 +57,7 @@ def ask(payload: AskPayload,
 
 @app.post("/upload_docs")
 async def upload_file(
-    file: Optional[UploadFile] = File(...),
+    file: Optional[UploadFile] = File(...),  # noqa: B008
     session_id: Optional[str] = None
 ):
     if not file:
@@ -80,14 +78,17 @@ async def upload_file(
         "last_chunk_preview": preview_chunk(chunks[-1])
     }
 
+
 # get the list of items - pdf files
 @app.get("/ping")
 def root():
     return {"ok": True}
 
+
 @app.get("/")
 def redirect():
     return "Go to:  http://127.0.0.1:8000/docs"
+
 
 @app.get("/session/{session_id}/history")
 def get_history_api(session_id: str):

@@ -25,3 +25,9 @@ Now instead of all this commands above you can run:
 ```python
 docker compose up --build
 ```
+
+Unused imports and functions
+bash run_checks.sh
+Vulture: Lists unused code. Remove or refactor as needed.
+Ruff: ...
+
