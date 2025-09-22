@@ -1,33 +1,75 @@
-# Chat Assistand PDF
+# Chat Assistant (PDF‑aware)
 
-This project is a backend application built with FastAPI that enables users to ask questions in natural language. The system integrates a Large Language Model (LLM), which generates responses based on private documents such as PDFs, notes, and scientific articles. The goal is to provide an intelligent, document-aware question–answering interface.
+A small FastAPI backend that lets you ask natural-language questions about your own PDFs. It runs locally, finds the most relevant parts of your documents, and uses that context to generate short answers.
 
-To run the application you must type:
-```python
-uv run python main.py
+---
+
+## What it does (in simple terms)
+
+1. **Upload a PDF** → the app extracts and cleans the text, splits it into small overlapping chunks, and builds a vector index.
+2. **Ask a question** → it searches the chunks for the best matches and adds them as **context** to the prompt.
+3. **Get a short answer** → a small local LLM responds using that context. Sessions keep separate docs and brief chat history.
+
+---
+
+## Tech stack
+
+- **Python** • FastAPI for the API layer
+- **Transformers + PyTorch** for the small instruction‑tuned LLM
+- **SentenceTransformers + FAISS** for embeddings and vector search
+- **PyPDF2** for PDF text extraction
+- **uv** for running the app locally (any standard Python env also works)
+- **Docker**/**Compose** (optional) for containerized runs
+
+---
+
+## Key features
+
+- **Practical RAG**: retrieval‑augmented generation with clear, readable code. After upload, text is cleaned (newline normalization, hyphen joins), token‑chunked, embedded, and stored in FAISS. On each question, the top matches are retrieved and prepended as context before generation.
+- **Local‑first LLM**: default model is a tiny instruction‑tuned transformer (fast, laptop‑friendly). You can swap the model name for a bigger one if you have more resources.
+- **Per‑session isolation**: each session has its own documents and short chat history. Uploading new docs resets the conversation for that session. In‑memory storage keeps things simple.
+- **Token‑aware chunking**: small chunks (with overlap) to improve retrieval quality without blowing up context size.
+- **Straightforward code layout**:
+  - `app.py` — FastAPI endpoints
+  - `llm.py` — model load, prompt building, generation
+  - `rag.py` — PDF extract/clean, token chunking
+  - `session_manager.py` — sessions, docs, short history
+  - `vector_store.py` — embeddings + FAISS
+  - `main.py` — run in API or CLI mode
+
+---
+
+## Quick start
+
+### Run locally
+
+```bash
+# Start the API
+uv run python main.py api
+# Open the docs UI:
+# http://127.0.0.1:8000/docs
 ```
-To see the results go to:
-http://localhost:8000 or
-http://localhost:8000/docs
 
+CLI mode is also available - only to talk to LLM:
 
-It is possible to use it with docker also - you must have docker installed:
-```python
-docker --version
+```bash
+uv run python main.py cli
 ```
-To start docker container run - build the image and then run the container
-```python
+
+### With Docker (optional)
+
+```bash
+# Export deps and build
 uv export --frozen --no-dev --no-cache -o requirements.txt
 docker build -t chat-assistant-pdf .
 docker run -p 8000:8000 chat-assistant-pdf
-```
-Now instead of all this commands above you can run:
-```python
+
+# Or with Compose
 docker compose up --build
 ```
 
-Unused imports and functions
+### Run dev
+To check code style and function names before committing, run:
+```bash
 bash run_checks.sh
-Vulture: Lists unused code. Remove or refactor as needed.
-Ruff: ...
-
+```
