@@ -73,3 +73,7 @@ To check code style and function names before committing, run:
 ```bash
 bash run_checks.sh
 ```
+To run tests:
+```bash
+bash run_tests.sh
+```

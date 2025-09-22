@@ -2,7 +2,7 @@
 import re
 from io import BytesIO
 
-import PyPDF2
+import pypdf
 
 from app.llm import tokenizer
 from app.vector_store import VectorStore
@@ -56,7 +56,7 @@ def rag(text: str, filename: str | None):
 def extract_text_from_pdf(pdf_bytes: bytes) -> str:
     """Extract text from a PDF file (bytes)."""
     pdf_stream = BytesIO(pdf_bytes)
-    reader = PyPDF2.PdfReader(pdf_stream)
+    reader = pypdf.PdfReader(pdf_stream)
     text_parts = []
     for page in reader.pages:
         raw = page.extract_text() or ""

@@ -79,7 +79,7 @@ def new_session():
 
 @app.get("/ping")
 def root():
-    return {"ok": True}
+    return {"status": "ok"}
 
 
 @app.get("/")
