@@ -1,4 +1,6 @@
-import uvicorn  # noqa: B008
+import argparse
+
+import uvicorn
 
 from app.llm import chat_once
 
@@ -19,6 +21,23 @@ def open_chat():
         print("\nSee you soon!")
 
 
+def main():
+    parser = argparse.ArgumentParser(description="Run Chat Assistant")
+    parser.add_argument(
+        "mode",
+        choices=["api", "cli"],
+        help="Run in 'api' mode (FastAPI with uvicorn) or 'cli' mode (terminal chat)",
+    )
+    args = parser.parse_args()
+
+    if args.mode == "cli":
+        open_chat()
+    elif args.mode == "api":
+        uvicorn.run("app.app:app", host="127.0.0.1", port=8000, reload=True)
+
+
 if __name__ == "__main__":
-    # open_chat()  # how to organize it better (parser) + more extentions not only pdf
-    uvicorn.run("app.app:app", host="127.0.0.1", port=8000, reload=True)
+    main()
+    # todo:  add more extentions not only pdf
+    # error handling when couldn't read the file
+    # tests
