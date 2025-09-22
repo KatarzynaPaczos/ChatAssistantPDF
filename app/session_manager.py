@@ -38,6 +38,7 @@ def add_document_to_session(session_id: str,
                             chunks: list[str]):
     """Add document chunks to a session."""
     docs = get_session_docs(session_id)
+    remove_session_history(session_id)
     docs[str(filename)] = chunks
 
 
@@ -47,3 +48,7 @@ def clamp_history(history):
     rest = history[1:] if sys else history
     trimmed = rest[-MAX_TURNS*2:]# here - but user x3 maybe...
     return sys + trimmed
+
+
+def remove_session_history(session_id):
+    SESSIONS[session_id] = [start_message]
