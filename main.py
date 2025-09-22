@@ -1,11 +1,11 @@
-from app.llm import chat_once, get_history
 import uvicorn  # noqa: B008
+
+from app.llm import chat_once
 
 
 def generate_chat(user_text: str) -> str:
-    # if you use 'cli' - it is one session
-    hist = get_history("cli")
-    return chat_once(hist, user_text)
+    # in cli only one session_id = "cli"
+    return chat_once("cli",  user_text)
 
 
 def open_chat():
@@ -20,5 +20,6 @@ def open_chat():
 
 
 if __name__ == "__main__":
-    # open_chat()  # jak to lepiej zorganizować (parser) + historia not pudated after ask question!!!
+    # open_chat()  # how to organize it better (parser) + history not pudated after ask question
+    # # /n from the response - remove. more extentions not only pdf
     uvicorn.run("app.app:app", host="127.0.0.1", port=8000, reload=True)

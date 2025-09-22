@@ -1,12 +1,13 @@
 
-from typing import List, Optional
-from app.VectorStore import VectorStore
-from io import BytesIO
-import PyPDF2
 import re
+from io import BytesIO
+
+import PyPDF2
+
+from app.vector_store import VectorStore
 
 
-def clean_text(txt: str) -> List[str]:
+def clean_text(txt: str) -> list[str]:
     """
     Cleaning - new line normalisation, erase doubble space
     """
@@ -21,7 +22,7 @@ def clean_text(txt: str) -> List[str]:
     return [s.strip() for s in sentences if s.strip()]
 
 
-def chunk_text(text: str, max_chars: int = 100, overlap: int = 10) -> List[str]:
+def chunk_text(text: str, max_chars: int = 100, overlap: int = 10) -> list[str]:
     """
     Chuns -> section -> doubble /n
     """
@@ -60,13 +61,10 @@ def chunk_text(text: str, max_chars: int = 100, overlap: int = 10) -> List[str]:
     return final
 
 
-def RAG(text: str, filename: Optional[str]):
+def rag(text: str, filename: str | None):
     chunks = chunk_text(text, max_chars=200, overlap=100)
     model = VectorStore()
     model.add_document(filename, chunks)
-    query = "Who is the author of that doc?"
-    response = model.query(query, k=3)
-    print(response)
     return chunks
 
 

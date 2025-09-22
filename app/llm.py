@@ -1,6 +1,8 @@
-from transformers import AutoModelForCausalLM, AutoTokenizer
-from typing import List, Dict
 import torch
+from transformers import AutoModelForCausalLM, AutoTokenizer
+
+from app.session_manager import get_session_docs, get_session_history
+from app.vector_store import VectorStore
 
 # MODEL_NAME = "Qwen/Qwen2.5-3B-Instruct" # too huge
 # MODEL_NAME = "microsoft/Phi-3-mini-4k-instruct" # smaller
@@ -9,35 +11,17 @@ tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
 model = AutoModelForCausalLM.from_pretrained(MODEL_NAME)
 model.eval()
 
-SESSIONS: Dict[str, List[dict]] = {}
-SYSTEM_PROMPT = "You are a helpful assistant. Answer briefly in English. If you don't know, say you don't know."
-history = [{"role": "system", "content": SYSTEM_PROMPT}]
-MAX_TURNS = 4  # when the history is too long (more than MAX_TURNS turns), cut it
 
-
-def clamp_history(history):
-    sys = history[0:1] if history and history[0]["role"] == "system" else []
-    rest = history[1:] if sys else history
-    trimmed = rest[-MAX_TURNS*2:]
-    return sys + trimmed
-
-
-def get_history(session_id: str) -> List[dict]:
-    if session_id not in SESSIONS:
-        SESSIONS[session_id] = [{"role": "system", "content": SYSTEM_PROMPT}]
-    return SESSIONS[session_id]
-
-
-def chat_once(history: List[dict], user_text: str, max_new_tokens=100, temperature=0.1) -> str:
+def chat_once(session_id: str, user_text: str, max_new_tokens=100, temperature=0.1) -> str:
+    """single chat with AI assistant"""
+    history = get_session_history(session_id)
     history.append({"role": "user", "content": user_text})
-    safe_history = clamp_history(history)
     inputs = tokenizer.apply_chat_template(
-        safe_history,
+        history,
         add_generation_prompt=True,
         tokenize=True,
         return_dict=True, return_tensors="pt",
     )
-
     with torch.inference_mode():
         outputs = model.generate(
             **inputs,  # or input_ids=inputs["input_ids"], attention_mask=inputs["attention_mask"],
@@ -53,3 +37,19 @@ def chat_once(history: List[dict], user_text: str, max_new_tokens=100, temperatu
     # Change tokens z gen_ids to text. skip_special_tokens=True removes <s> itp.
     history.append({"role": "assistant", "content": text})
     return text
+
+
+def rag_add_context_if_docs(sid: str, question: str):
+    '''add new item to historey with the context'''
+    chunks_all = get_session_docs(sid)
+    context_chunks = []
+    if chunks_all:
+        vs = VectorStore()
+        for fname, chunks in chunks_all.items():
+            vs.add_document(fname, chunks)
+        results = vs.query(question, k=3)
+        context_chunks = [r["chunk"] for r in results]
+        context = "\n".join(context_chunks)
+        return f"Context: {context}. Based on the above context, answer the following question: {question}"
+    else:
+        return question

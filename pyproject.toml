@@ -22,16 +22,20 @@ dependencies = [
 ]
 
 [tool.vulture]
+min_confidence = 60
 ignore_names = [
     "new_session",
-    "ask",
+    "ask_question",
     "upload_file",
     "root",
     "redirect",
-    "get_history_api",
+    "session_history",
+    "session_docs"
 ]
-min_confidence = 80
 
 [tool.ruff]
 line-length = 115
 exclude = [".git", "__pycache__", "build", "dist", "venv"]
+# Enable more rule sets
+lint.select = ["E", "F", "W"]   # E=pycodestyle errors, F=pyflakes, W=pycodestyle warnings
+lint.extend-select = ["B", "I", "N", "UP", "C4", "SIM"]

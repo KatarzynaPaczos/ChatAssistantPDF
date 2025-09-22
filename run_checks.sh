@@ -2,5 +2,5 @@
 vulture app/
 vulture main.py
 ruff check app/
-ruff check .
 ruff check . --fix
+ruff check .
