@@ -4,65 +4,50 @@ from io import BytesIO
 
 import PyPDF2
 
+from app.llm import tokenizer
 from app.vector_store import VectorStore
 
 
-def clean_text(txt: str) -> list[str]:
+def clean_text(txt: str) -> str:
     """
     Cleaning - new line normalisation, erase doubble space
     """
-    if not txt:  # paragraf brakes gone!!!!!!!
-        return []
-    t = txt.replace("\r\n", "\n").replace("\r", "\n")  # Normalize Windows/Mac newlines to Unix '\n'
-    t = re.sub(r"-\n(\w)", r"\1", t)  # join breaks in the middle of words "-\nX" -> "X"
-    t = re.sub(r"\n{3,}", "\n\n", t)  # Turn 3+ newlines into exactly two (one blank line = paragraph break)
-    t = re.sub(r"(?<!\n)\n(?!\n)", " ", t)  # SINGLE \n -> space
-    t = re.sub(r"[ \t]{2,}", " ", t)  # Collapse multiple spaces or tabs to a single space
-    sentences = re.split(r'(?<=[.!?])\s+', t)  # divide by sentences
-    return [s.strip() for s in sentences if s.strip()]
+    if not txt:
+        return ""
+    t = txt.replace("\r\n", "\n").replace("\r", "\n")
+    t = re.sub(r"-\n(\w)", r"\1", t)       # join word breaks
+    t = re.sub(r"\n{2,}", "\n\n", t)       # collapse multi blank lines
+    t = re.sub(r"(?<!\n)\n(?!\n)", " ", t) # single newline → space
+    t = re.sub(r"[ \t]{2,}", " ", t)       # collapse multiple spaces/tabs
+    return t.strip()
 
 
-def chunk_text(text: str, max_chars: int = 100, overlap: int = 10) -> list[str]:
+def chunk_text(text: str, max_tokens: int = 100, overlap: int = 20) -> list[str]:
     """
-    Chuns -> section -> doubble /n
+    Split text into overlapping chunks by tokens.
+    Each chunk is cleaned and flattened.
     """
-    paragrafs = clean_text(text)
-    if not paragrafs or len(paragrafs) == 0:
-        return []
+    text = clean_text(text)
+    tokens = tokenizer.encode(text, add_special_tokens=False)
 
-    # paragraphs = [p.strip() for p in re.split(r"\n{2,}", text) if p.strip()]
     chunks = []
-    buf = ""
-    for p in paragrafs:
-        if not buf:
-            buf = p
-        elif len(buf) + 2 + len(p) <= max_chars:
-            buf = buf + "\n\n" + p
-        else:
-            chunks.append(buf)
-            tail = buf[-overlap:] if overlap > 0 and len(buf) > overlap else ""
-            buf = (tail + ("\n\n" if tail else "") + p).strip()
-    if buf:
-        chunks.append(buf)
+    start = 0
+    while start < len(tokens):
+        end = min(start + max_tokens, len(tokens))
+        chunk_tokens = tokens[start:end]
+        chunk = tokenizer.decode(chunk_tokens, skip_special_tokens=True)
+        chunk = " ".join(chunk.split())  # flatten stray whitespace/newlines
+        chunks.append(chunk)
 
-    # if long blocks - split them  up
-    final = []
-    for c in chunks:
-        if len(c) <= max_chars:
-            final.append(c)
-        else:
-            start = 0
-            while start < len(c):
-                end = min(start + max_chars, len(c))
-                final.append(c[start:end])
-                if end == len(c):
-                    break
-                start = max(0, end - overlap)
-    return final
+        if end == len(tokens):
+            break
+        start = end - overlap  # slide window with overlap
+
+    return chunks
 
 
 def rag(text: str, filename: str | None):
-    chunks = chunk_text(text, max_chars=200, overlap=100)
+    chunks = chunk_text(text, max_tokens=100, overlap=20)
     model = VectorStore()
     model.add_document(filename, chunks)
     return chunks
@@ -72,14 +57,14 @@ def extract_text_from_pdf(pdf_bytes: bytes) -> str:
     """Extract text from a PDF file (bytes)."""
     pdf_stream = BytesIO(pdf_bytes)
     reader = PyPDF2.PdfReader(pdf_stream)
-    text = ""
+    text_parts = []
     for page in reader.pages:
-        page_text = page.extract_text()
-        if page_text:
-            text += page_text
-    return text
+        raw = page.extract_text() or ""
+        cleaned = clean_text(raw)
+        text_parts.append(cleaned)
+    return "\n\n".join(text_parts).strip()
 
 
-def preview_chunk(chunk: str, length: int = 400) -> str:
+def preview_chunk(chunk: str, length: int = 200) -> str:
     """Return a preview of a chunk (first N chars)."""
     return chunk[:length] if chunk else ""

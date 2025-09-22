@@ -20,6 +20,5 @@ def open_chat():
 
 
 if __name__ == "__main__":
-    # open_chat()  # how to organize it better (parser) + history not pudated after ask question
-    # # /n from the response - remove. more extentions not only pdf
+    # open_chat()  # how to organize it better (parser) + more extentions not only pdf
     uvicorn.run("app.app:app", host="127.0.0.1", port=8000, reload=True)

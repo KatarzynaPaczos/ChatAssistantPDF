@@ -47,7 +47,7 @@ def rag_add_context_if_docs(sid: str, question: str):
         vs = VectorStore()
         for fname, chunks in chunks_all.items():
             vs.add_document(fname, chunks)
-        results = vs.query(question, k=3)
+        results = vs.query(question, k=2)
         context_chunks = [r["chunk"] for r in results]
         context = "\n".join(context_chunks)
         return f"Context: {context}. Based on the above context, answer the following question: {question}"
