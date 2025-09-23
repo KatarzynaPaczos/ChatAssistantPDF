@@ -71,9 +71,14 @@ docker compose up --build
 ### Run dev
 To check code style and function names before committing, run:
 ```bash
-bash run_checks.sh
+uv run bash run_checks.sh
 ```
 To run tests:
 ```bash
-bash run_tests.sh
+uv run bash run_tests.sh
 ```
+
+To-do – next steps:
+* Create HTML for chatting with AI
+* Write more tests
+* Expand to all extensions, not only PDF
