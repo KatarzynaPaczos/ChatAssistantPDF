@@ -5,8 +5,8 @@ from sentence_transformers import SentenceTransformer
 
 
 class VectorStore:
-    def __init__(self, model_name: str = "sentence-transformers/all-MiniLM-L6-v2"):
-        self.embedder = SentenceTransformer(model_name)
+    def __init__(self, embedder: SentenceTransformer):
+        self.embedder =  embedder
         self.dim = self.embedder.get_sentence_embedding_dimension()
         self.index = faiss.IndexFlatL2(self.dim)
         # mapping: internal ID → metadata (chunk text, filename, etc.)

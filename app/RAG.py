@@ -3,10 +3,14 @@ import re
 from io import BytesIO
 
 import pypdf
+from sentence_transformers import SentenceTransformer
 
-from app.llm import tokenizer
+from app.session_manager import get_session_docs
 from app.vector_store import VectorStore
 
+MODEL_NAME = "sentence-transformers/all-MiniLM-L6-v2"
+embedder = SentenceTransformer(MODEL_NAME)
+tokenizer = embedder.tokenizer
 
 def clean_text(txt: str) -> str:
     """
@@ -48,7 +52,7 @@ def chunk_text(text: str, max_tokens: int = 100, overlap: int = 20) -> list[str]
 
 def rag(text: str, filename: str | None):
     chunks = chunk_text(text, max_tokens=100, overlap=20)
-    model = VectorStore()
+    model = VectorStore(embedder=embedder)
     model.add_document(filename, chunks)
     return chunks
 
@@ -68,3 +72,19 @@ def extract_text_from_pdf(pdf_bytes: bytes) -> str:
 def preview_chunk(chunk: str, length: int = 200) -> str:
     """Return a preview of a chunk (first N chars)."""
     return chunk[:length] if chunk else ""
+
+
+def rag_add_context_if_docs(sid: str, question: str):
+    '''add new item to historey with the context'''
+    chunks_all = get_session_docs(sid)
+    context_chunks = []
+    if chunks_all:
+        vs = VectorStore(embedder=embedder)
+        for fname, chunks in chunks_all.items():
+            vs.add_document(fname, chunks)
+        results = vs.query(question, k=2)
+        context_chunks = [r["chunk"] for r in results]
+        context = "\n".join(context_chunks)
+        return f"Context: {context}. Based on the above context, answer the following question: {question}"
+    else:
+        return question

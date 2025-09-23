@@ -2,8 +2,8 @@
 from fastapi import FastAPI, File, HTTPException, UploadFile
 from pydantic import BaseModel
 
-from app.llm import chat_once, rag_add_context_if_docs
-from app.rag import extract_text_from_pdf, preview_chunk, rag
+from app.llm import chat_once
+from app.rag import extract_text_from_pdf, preview_chunk, rag, rag_add_context_if_docs
 from app.session_manager import add_document_to_session, create_session, get_session_docs, get_session_history
 
 app = FastAPI(title="Simple Chat API")

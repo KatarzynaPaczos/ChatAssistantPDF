@@ -1,8 +1,7 @@
 import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
-from app.session_manager import get_session_docs, get_session_history
-from app.vector_store import VectorStore
+from app.session_manager import get_session_history
 
 # MODEL_NAME = "Qwen/Qwen2.5-3B-Instruct" # too huge
 # MODEL_NAME = "microsoft/Phi-3-mini-4k-instruct" # smaller
@@ -37,19 +36,3 @@ def chat_once(session_id: str, user_text: str, max_new_tokens=100, temperature=0
     # Change tokens z gen_ids to text. skip_special_tokens=True removes <s> itp.
     history.append({"role": "assistant", "content": text})
     return text
-
-
-def rag_add_context_if_docs(sid: str, question: str):
-    '''add new item to historey with the context'''
-    chunks_all = get_session_docs(sid)
-    context_chunks = []
-    if chunks_all:
-        vs = VectorStore()
-        for fname, chunks in chunks_all.items():
-            vs.add_document(fname, chunks)
-        results = vs.query(question, k=2)
-        context_chunks = [r["chunk"] for r in results]
-        context = "\n".join(context_chunks)
-        return f"Context: {context}. Based on the above context, answer the following question: {question}"
-    else:
-        return question
